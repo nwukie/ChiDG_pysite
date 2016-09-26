@@ -40,15 +40,17 @@ equations using the discontinuous Galerkin method on Chimera-overset grids.
 
 .. image:: figures/icon_dg.png
     :width: 19 %
-    :target: ./code_details/mesh/detail_mesh.html
+    :target: ./code_details/equations/detail_equations.html
 .. image:: figures/icon_curved.png
     :width: 19%
+    :target: ./code_details/mesh/detail_mesh.html
 .. image:: figures/icon_chimera.png
     :width: 19%
 .. image:: figures/icon_newton.png
     :width: 19%
 .. image:: figures/icon_autodiff.png
     :width: 19%
+    :target: ./code_details/autodiff/detail_autodiff.html
 
 
 |
@@ -99,25 +101,14 @@ Example applications:
 |
 
 
-Getting started
-===============
-
-    - Installation
-    - Tutorial
-    - Examples
-
-
-
-
-
-
 
 .. toctree::
-   :maxdepth: 4
-
-   getting_started/getting_started
-   examples/example_main
-   code_details/details_main
+    :maxdepth: 4
+    :hidden:
+ 
+    getting_started/getting_started
+    examples/example_main
+    code_details/details_main
 
 
 
