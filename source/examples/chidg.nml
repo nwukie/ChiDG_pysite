@@ -1,0 +1,54 @@
+&files
+    gridfile            = 'default_string.h5'
+    solutionfile_in     = 'default_string.h5'
+    solutionfile_out    = 'default_string.h5'
+/
+
+
+
+&space
+    basis           = 'legendre'
+    solution_order  = 1
+/
+
+
+
+&quadrature
+    gq_rule        = 2      ! 1 = Collocation  ;  2 = Over-integration
+/
+
+
+
+&time
+    time_integrator = 'steady'
+    dt              = 0.0001
+    time_steps      = 1000
+    ttol            = 1.e-6
+    ntime_instances = 1
+/
+
+
+
+&nonlinear_solve
+    nonlinear_solver = 'quasi_newton'
+    cfl0             = 2.0
+    ntol             = 1.e-6
+/
+
+
+
+&linear_solve
+    linear_solver       = 'fgmres'
+    ltol                = 1.e-8
+    preconditioner      = 'ILU0'
+/
+
+
+
+&io
+    nwrite         = 50
+    initial_write  = .false.
+    final_write    = .true.
+/
+
+
