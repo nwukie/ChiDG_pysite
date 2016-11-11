@@ -329,7 +329,7 @@ The ChiDG executable, ``chidg``, works as:
 .. attribute:: chidg
 
     - Run a ChiDG simulation
-    - Assumes chidg.nml namelist file is present in current directory
+    - Assumes chidg.nml namelist and grid files are present in the working directory
 
 
 
