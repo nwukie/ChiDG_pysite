@@ -41,7 +41,7 @@
     nonlinear_solver    = 'quasi_newton'    ! NONLINER_SOLVERS: 'newton', 'quasi-newton'
     nonlinear_steps     = 20                ! Maximum number of nonlinear iterations
     ntol                = 1.e-6             ! Convergence tolerance to terminate nonlinear solve
-    cfl0                = 2.0               ! CFL0 for 'quasi-newton' iteration
+    cfl0                = 5.0               ! CFL0 for 'quasi-newton' iteration
 /
 
 
