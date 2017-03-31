@@ -20,6 +20,15 @@ indices is defined here as:
     (r, \theta, z)  \rightarrow (1,2,3)
 
 
+
+.. image:: d__coordinate_systems.png
+    :width: 90 %
+    :align: center
+
+
+
+
+
 Additionally, effort has been put forth to represent data in a manner consistent
 with vector-calculus. For example, test function gradient components are computed
 as:
@@ -31,6 +40,14 @@ as:
     \nabla \psi = \frac{\partial \psi}{\partial r}\hat{r} + \frac{1}{r}\frac{\partial \psi}{\partial \theta} \hat{\theta} + \frac{\partial \psi}{\partial z} \hat{z}
 
 
+
+The transformation between ``Cartesian`` and ``Cylindrical`` coordinates is given by
+
+.. math::
+
+    x &= r cos(\theta)       \quad\quad\quad r &= \sqrt{x^2 + y^2} \\
+    y &= r sin(\theta)       \quad\quad\quad \theta &= \text{atan2}(y,x) \\
+    z &= z                   \quad\quad\quad\quad\quad \: \: z &= z
 
 
 
