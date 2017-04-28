@@ -56,22 +56,33 @@ equations using the discontinuous Galerkin method on Chimera-overset grids.
 |
 |
 
-ChiDG exists as:
-----------------
+The :ref:`chidg_t` is:
+----------------------
 
 a Fortran Class that provides an interface to the simulation environment.
 
-::
+..    .. ::
+..    .. 
+..    ..     type :: chidg_t
+..    ..         type(chidg_data_t)          data
+..    ..         type(time_integrator_t)     time_integrator
+..    ..         type(nonlinear_solver_t)    nonlinear_solver
+..    ..         type(linear_solver_t)       linear_solver
+..    ..         type(preconditioner_t)      preconditioner
+..    ..         ...
+..    ..     end type chidg_t
 
+.. code-block:: fortran
+    
     type :: chidg_t
-        type(chidg_data_t)          data
-        type(time_integrator_t)     time_integrator
-        type(nonlinear_solver_t)    nonlinear_solver
-        type(linear_solver_t)       linear_solver
-        type(preconditioner_t)      preconditioner
+
+        type(chidg_data_t)                      :: data
+        class(time_integrator_t),   allocatable :: time_integrator
+        class(nonlinear_solver_t),  allocatable :: nonlinear_solver
+        class(linear_solver_t),     allocatable :: linear_solver
+        class(preconditioner_t),    allocatable :: preconditioner
         ...
     end type chidg_t
-
 
 
 
@@ -84,15 +95,15 @@ a Fortran Class that provides an interface to the simulation environment.
 Example applications:
 --------------------------------
 
-.. image:: figures/naca2412.png
-    :width: 36 %
-    :align: left
-.. image:: figures/mode91_3dview.png
-    :width: 32 %
-    :align: right
-.. image:: figures/aachen_turbine_nonreflectingbc.png
-    :width: 20 %
-    :align: center
+ .. image:: figures/naca2412.png
+     :width: 36 %
+     :align: left
+ .. image:: figures/mode91_3dview.png
+     :width: 32 %
+     :align: right
+ .. image:: figures/aachen_turbine_nonreflectingbc.png
+     :width: 20 %
+     :align: center
 
 
 
@@ -107,16 +118,16 @@ Example applications:
     :hidden:
  
     getting_started/getting_started
-    examples/example_main
     code_details/details_main
+    examples/example_main
 
 
 
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. Indices and tables
+.. ==================
+.. 
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
 

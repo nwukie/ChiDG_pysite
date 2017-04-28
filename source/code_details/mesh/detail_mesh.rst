@@ -1,6 +1,6 @@
-====
-Mesh
-====
+==================
+Computational Grid
+==================
 
 
 
@@ -53,15 +53,42 @@ The transformation between ``Cartesian`` and ``Cylindrical`` coordinates is give
 
 
 
-
-
 ----
 Mesh
 ----
 
-The ``mesh_t`` data structure contains an entire geometry description for a single
+A ``mesh_t`` instance contains the entire description of the computational grid for 
+the local processor. A ``mesh_t`` conatains an array of ``domain_t`` objects, one 
+for each block. A ``mesh_t`` object also contains boundary condition geometry, 
+located in the ``bc_patch_group`` component. The ``bc_patch_group`` objects
+are independent of the ``domains``. A given ``bc_patch_group`` could potentially
+include references to faces on multiple ``domain`` objects.
+
+.. code-block:: fortran
+    
+    type :: mesh_t
+
+        type(domain_t),         allocatable :: domain(:)
+        type(bc_patch_group_t), allocatable :: bc_patch_group(:)
+
+    contains
+
+        
+    end type mesh_t
+
+
+.. image:: d__mesh.png
+    :width: 90 %
+    :align: center
+
+
+------
+Domain
+------
+
+The ``domain_t`` data structure contains an entire geometry description for a single
 domain. This exists as an array of ``element_t`` types, and array of ``face_t`` types,
-and a ``chimera_t`` instance. An ``element_t`` exists for every element in the ``mesh_t``
+and a ``chimera_t`` instance. An ``element_t`` exists for every element in the ``domain_t``
 domain. For a given ``element_t``, a ``face_t`` instance exists for each face.
 
 
@@ -79,9 +106,9 @@ domain. For a given ``element_t``, a ``face_t`` instance exists for each face.
 
 
 
-
-Elements
--------------
+-------
+Element
+-------
 
 An ``element_t`` instance contains information needed by the framework and also
 general information that could be useful to users. This includes:
@@ -143,11 +170,12 @@ expansion representing the element coordinates as
 
     x = \sum \psi \hat{x}   \quad\rightarrow\quad  \frac{\partial x}{\partial \xi} = \sum \frac{\partial \psi}{\partial \xi} \hat{x}
 
-The metric terms are computed by inverting the matrices 
+The element metric terms are obtained by inverting the matrices 
 :math:`\partial \vec{x}/\partial \vec{\xi}` to give
 
 .. math::
 
+    \mathcal{T} = 
     \begin{pmatrix}
       \xi_x   \quad \xi_y   \quad   \xi_z \\
       \eta_x  \quad \eta_y  \quad   \eta_z \\
@@ -156,12 +184,15 @@ The metric terms are computed by inverting the matrices
     \quad
     \quad
     \quad
+    \mathcal{T} = 
     \begin{pmatrix}
        \xi_r   \quad   \xi_\theta   \quad   \xi_z  \\
        \eta_r  \quad   \eta_\theta  \quad   \eta_z \\
        \zeta_r \quad   \zeta_\theta \quad   \zeta_z
     \end{pmatrix} 
 
+Note, that the cylindrical element transformation matrix has :math:`r`-scaling included
+implicitly since it was computed by inverting the mapping constructed previously.
 The metric terms are defined at each quadrature point in the ``metric(:,:,:)`` component 
 of a given ``element_t``. To access the matrix of metric components for a given quadrature 
 node ``igq``, the component can be used as
@@ -207,11 +238,14 @@ The inverse element jacobian terms(``Cartesian`` or ``Cylindrical``) ``jinv(:)``
 
 
 
-Derivatives + Gradients
-~~~~~~~~~~~~~~~~~~~~~~~
+Gradients
+~~~~~~~~~
 
-The derivatives of basis functions with respect to the computational coordinates on a 
-reference element are already defined in a quadrature instance associated with an 
+Gradients of basis functions with respect to the reference coordinates 
+are not dependent on the physical coordinate system. So, any calculations 
+of the terms :math:`\partial \psi/\partial \vec{\xi}` do not need to be modified
+with a change from one physical coordinate system to another.
+These gradients are defined on a defined in a quadrature instance associated with an 
 element in the component ``element%gq%vol``. For example, the component 
 ``element%gq%vol%ddxi`` gives:
 
@@ -226,13 +260,57 @@ element in the component ``element%gq%vol``. For example, the component
         \end{pmatrix}
 
 
-Gradients in pysical coordinates in an ``element_t`` can be computed using 
-``grad1(:,:)``, ``grad2(:,:)``, and ``grad3(:,:)``  components. The gradients
-of basis functions with respect to physical 
-coordinates(:math:`x,y,z` , :math:`r,\theta,z` ) are specific to each 
-``element_t`` and these derivatives can be accessed in the 
-``grad1``, ``grad2``, ``grad3`` components. For example, the ``element%grad1`` component 
-contains the gradient along the 1st physical coordinate  for all test functions at all
+Gradients with respect to the physical coordinate system do change depending on the 
+coordinate system being used. The gradient for Cartesian and Cylindrical coordinates is
+
+.. math:: 
+
+    \nabla f &= \frac{\partial f}{\partial x}\hat{x}  +  \frac{\partial f}{\partial y}\hat{y}  +  \frac{\partial f}{\partial z}\hat{z} \\
+    \nabla f &= \frac{\partial f}{\partial r}\hat{r}  +  \frac{1}{r}\frac{\partial f}{\partial \theta}\hat{\theta}  +  \frac{\partial f}{\partial z}\hat{z}
+
+The coordinate transformation for the gradient from reference space to physical space
+is computed using the transpose of the element metric matrix as
+
+.. math::
+
+    \nabla_x \psi = \mathcal{T}^T \nabla_\xi \psi
+
+For the Cartesian and Cylindrical coordinate systems, these are expanded as
+
+.. math::
+
+    \nabla_{\vec{x}} \psi
+    =
+    \begin{bmatrix}
+        \xi_x   &   \eta_x  &   \zeta_x \\
+        \xi_y   &   \eta_y  &   \zeta_y \\
+        \xi_z   &   \eta_z  &   \zeta_z \\
+    \end{bmatrix}
+    \begin{bmatrix}
+        \psi_\xi \\ \psi_\eta \\ \psi_\zeta
+    \end{bmatrix}
+    \\
+    \nabla_{\vec{r}} \psi
+    =
+    \begin{bmatrix}
+        \xi_r       &   \eta_r      &   \zeta_r      \\
+        \xi_\theta  &   \eta_\theta &   \zeta_\theta \\
+        \xi_z       &   \eta_z      &   \zeta_z      \\
+    \end{bmatrix}
+    \begin{bmatrix}
+        \psi_\xi \\ \psi_\eta \\ \psi_\zeta
+    \end{bmatrix}
+
+Note that the terms :math:`\nabla_{\vec{x}} \psi` and :math:`\nabla_{\vec{r}} \psi` are the gradient
+vectors and not the directional derivatives. For the Cartesian coordinate system, these
+things are identical. For the cylindrical coordinate system, 
+they are not. 
+
+
+Gradients of basis functions with respect to the pysical coordinate system
+in an ``element_t`` can be accessed in the ``grad1(:,:)``, ``grad2(:,:)``, 
+and ``grad3(:,:)``  components. For example, the ``element%grad1`` component 
+contains the gradient along the 1st physical coordinate for all basis functions at all
 quadrature nodes as:
 
 
@@ -260,9 +338,9 @@ quadrature nodes as:
 
 
 
-
-Faces
--------------
+----
+Face
+----
 
 .. image:: d__face.png
     :width: 90%
@@ -335,11 +413,11 @@ Unit normal vectors can be accessed in the ``unorm`` component and are computed 
 
 
 
-
+------------------
 Chimera Interfaces
 ------------------
 
-Each ``mesh_t`` instance contains a ``mesh%chimera`` component that holds all information
+Each ``domain_t`` instance contains a ``domain%chimera`` component that holds all information
 regarding chimera communication for that particular mesh block. This takes the
 form of ``chimera_receiver`` and ``chimera_donor`` components. Currently, only
 the ``chimera_receiver`` is utilized. ``chimera_donor`` will be used to facilitate 
@@ -352,21 +430,21 @@ communication between processors for parallel code execution.
 
 
 
-In a given ``mesh_t`` block, every face that gets information from a separate block is 
+In a given ``domain_t``, every face that gets information from a separate block is 
 designated as a CHIMERA face, it is assigned an integer ID ``face%ChiID``, and it gets an 
-entry in the ``mesh%chimera%recv%data`` components. It can be accessed as
+entry in the ``domain%chimera%recv%data`` components. It can be accessed as
 
 ::
 
-    mesh%chimera%recv%data(ChiID)
+    domain%chimera%recv%data(ChiID)
 
 Example
 ~~~~~~~
 
-Consider an example with two mesh domains, as shown below.
-``mesh(1)`` contains four elements. ``mesh(2)`` contains eight elements.
-``mesh(1)`` overlaps with ``mesh(2)``. In particular, the top faces of elements E3 and E4 lie 
-inside ``mesh(2)``. These faces are designated as CHIMERA faces and are given a mesh-global
+Consider an example with two domains, as shown below.
+``domain(1)`` contains four elements. ``domain(2)`` contains eight elements.
+``domain(1)`` overlaps with ``domain(2)``. In particular, the top faces of elements E3 and E4 lie 
+inside ``domain(2)``. These faces are designated as CHIMERA faces and are given a mesh-global
 chimera ID. The top face of E3 is given the ID ChiID=1 and the top face of E4 is given
 the ID ChiID=2.
 
@@ -377,7 +455,7 @@ the ID ChiID=2.
 
 
 Each CHIMERA face has its own set of chimera information, which can be accessed via 
-``mesh%chimera%recv%data(ChiID)``. This is shown below for the two faces in this example.
+``domain%chimera%recv%data(ChiID)``. This is shown below for the two faces in this example.
 
 
 
