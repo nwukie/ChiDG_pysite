@@ -22,7 +22,9 @@ Algorithm                                           String Selector
 ================================================    ==================
 `Steady`_                                           ``Steady``
 `Backward Euler`_                                   ``Backward Euler``
+`Harmonic Balance`_                                 ``Harmonic Balance``
 `Forward Euler`_                                    ``Forward Euler``
+`Explicit Runge Kutta`_                             ``Runge-Kutta Method``
 ================================================    ==================
 
 
@@ -123,14 +125,82 @@ Newton Linearization:
 
 .. math::
 
-    \bigg(\frac{\boldsymbol{M}}{\Delta t} + \frac{\partial R(\hat{Q}^{n})}{\partial Q}\bigg) \Delta Q = -R(\hat{Q}^{n})
+    \bigg(\frac{\boldsymbol{M}}{\Delta t} + \frac{\partial R(\hat{Q}^{m})}{\partial Q}\bigg) \delta Q^{m} & = -\frac{\boldsymbol{M}}{\Delta t}\Delta Q^{m} -R(\hat{Q}^{m})\\
+    \hat{Q}^{m} = \hat{Q}^{n} + \Delta Q^{m}
 
+where, :math:`\delta Q^{m} = \Delta Q^{m + 1} -\Delta Q^{m}` for the :math:`m^{th}` Newton iteration.
 
 
 .. Diagonally-Implicit Runge-Kutta
 .. -------------------------------
 
+Harmonic Balance
+----------------
 
+Consider a set of :math:`N` independent equations:
+
+.. math::
+
+    \frac{\partial \hat{\boldsymbol{Q}}^{*}}{\partial t} + \nabla \cdot \boldsymbol{F}^{*} + \boldsymbol{S}^{*} = 0
+
+where
+
+.. math::
+
+    \hat{\boldsymbol{Q}^{*}} & = \left[\hat{Q}_{1}, \hat{Q}_{2}, \cdots, \hat{Q}^{N}\right]^{T}\\
+    \boldsymbol{F}^{*} & = \left[\vec{F}(\hat{Q}_{1}, \nabla \hat{Q}_{1}), \vec{F}(\hat{Q}_{2}, \nabla \hat{Q}_{2}), \cdots, \vec{F}(\hat{Q}_{N}, \nabla \hat{Q}_{N})\right]^{T}\\
+    \boldsymbol{S}^{*} & = \left[S(\hat{Q}_{1}, \nabla \hat{Q}_{1}), S(\hat{Q}_{2}, \nabla \hat{Q}_{2}), \cdots, S(\hat{Q}_{N}, \nabla \hat{Q}_{N})\right]^{T}
+
+In the harmonic balance method, a conservative solution vector at any instant of time is represented as a Fourier series in time as:
+
+.. math::
+
+    \hat{Q}_{n} = A_{0} + \sum_{k = 1}^{K}\left[A_{k}\text{sin}(\omega_{k}t_{n}) + B_{k}\text{cos}(\omega_{k}t_{n})\right]
+
+with :math:`K` frequencies, :math:`\boldsymbol{\omega} = [\omega_{1}, \omega_{2}, \cdots, \omega_{K}]` and the instant of time :math:`t_{n}` belongs to the set of time levels,
+:math:`\boldsymbol{t} = [t_{1}, t_{2}, \cdots, t_{N}]` with :math:`N = 2K + 1`. Thus, the series of conservative solution vectors can be related to the Fourier coefficients vectors,
+:math:`\hat{\boldsymbol{Q}}_{F}` as:
+
+.. math::
+
+    \hat{\boldsymbol{Q}}^{*} = E^{-1}\hat{\boldsymbol{Q}}_{F}
+
+Defining the pseudo spectral operator as,
+
+.. math::
+
+    D = \frac{\partial E^{-1}}{\partial t}E
+
+which couples :math:`\hat{\boldsymbol{Q}}^{*}` such that the conservative solutions satisfy time-varying sinusoidal functions according to their Fourier representation, the governing 
+equation can be rewritten as the Harmonic Balance equation:
+
+.. math::
+
+    D\hat{\boldsymbol{Q}}^{*} + \nabla \boldsymbol{F}^{*} + S^{*} = 0
+
+Multiplying with a column of test functions, :math:`\psi` and applying Gauss' divergence theorem provides the working form of the Harmonic Balance equation:
+
+.. math::
+
+    \int_{\Omega_{e}}\psi D\hat{\boldsymbol{Q}}^{*}d\Omega + \int_{\Gamma_{e}}\boldsymbol{F}^{*} \cdot \vec{n}d\Gamma - 
+    \int_{\Omega_{e}}\nabla \psi \cdot \boldsymbol{F}^{*}d\Omega + \int_{\Omega_{e}}\psi \boldsymbol{S}^{*}d\Omega = 0
+
+Newton Linearization:
+
+Consider,
+
+    .. math::
+
+        \mathscr{R}^{*} & = \int_{\Gamma_{e}}\boldsymbol{F}^{*} \cdot \vec{n}d\Gamma - \int_{\Omega_{e}}\nabla \psi \cdot \boldsymbol{F}^{*}d\Omega + 
+        \int_{\Omega_{e}}\psi \boldsymbol{S}^{*}d\Omega\\
+        \mathscr{D}^{*} & = \int_{\Omega_{e}}\psi D\hat{\boldsymbol{Q}}^{*}d\Omega
+
+Then, Newton linearization of the Harmonic Balance system of equations is:
+
+.. math::
+
+    \left(\frac{\partial \mathscr{D}^{*}}{\partial \hat{\boldsymbol{Q}}^{*}} + \frac{\partial \mathscr{R}^{*}}{\partial \hat{\boldsymbol{Q}}^{*}}\right)\Delta \hat{\boldsymbol{Q}^{*}} = 
+    -(\mathscr{D}^{*} + \mathscr{R}^{*})
 Explicit integrators
 ====================
 
@@ -159,6 +229,34 @@ Solution iterated in time as:
 .. math::
 
     \hat{Q}^{n+1} = \hat{Q}^n - {\Delta t} \boldsymbol{M}^{-1}R(\hat{Q}^{n})
+
+Explicit Runge Kutta
+--------------------
+
+For a general explicit runge Kutta method with :math:`s` stages:
+
+.. math::
+
+    \boldsymbol{M}\frac{\hat{Q}^{n + 1} - \hat{Q}^{n}}{\Delta t} = \sum_{i = 1}^{s}b_{i}\Delta \hat{Q}_{i}
+
+where
+
+.. math::
+    
+    \Delta \hat{Q}_{i} = -R\left(\hat{Q}^{n} + \sum_{j = 1}^{i - 1}a_{ij}\Delta \hat{Q}_{j}\right)
+
+Algebraic problem:
+
+.. math::
+
+    \frac{\Delta \hat{Q}}{\Delta t}\boldsymbol{M} - \sum_{i = 1}^{s}b_{i}\Delta \hat{Q}_{i} = 0
+
+Solution iterated in time as:
+
+.. math::
+
+    \hat{Q}^{n + 1} = \hat{Q}^{n} + \Delta t \boldsymbol{M}^{-1}\sum_{i = 1}^{s}b_{i}\Delta \hat{Q}_{i}
+
 
 |
 |
