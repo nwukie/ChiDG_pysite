@@ -22,6 +22,7 @@ Algorithm                                           String Selector
 ================================================    ==================
 `Steady`_                                           ``Steady``
 `Backward Euler`_                                   ``Backward Euler``
+`Diagonally-Implicit Runge-Kutta`_                  ``DIRK``
 `Harmonic Balance`_                                 ``Harmonic Balance``
 `Forward Euler`_                                    ``Forward Euler``
 `Explicit Runge Kutta`_                             ``Runge-Kutta Method``
@@ -126,13 +127,64 @@ Newton Linearization:
 .. math::
 
     \bigg(\frac{\boldsymbol{M}}{\Delta t} + \frac{\partial R(\hat{Q}^{m})}{\partial Q}\bigg) \delta Q^{m} & = -\frac{\boldsymbol{M}}{\Delta t}\Delta Q^{m} -R(\hat{Q}^{m})\\
-    \hat{Q}^{m} = \hat{Q}^{n} + \Delta Q^{m}
+    \hat{Q}^{m} & = \hat{Q}^{n} + \Delta Q^{m}
 
 where, :math:`\delta Q^{m} = \Delta Q^{m + 1} -\Delta Q^{m}` for the :math:`m^{th}` Newton iteration.
 
 
-.. Diagonally-Implicit Runge-Kutta
-.. -------------------------------
+Diagonally-Implicit Runge-Kutta
+-------------------------------
+
+.. math::
+
+    \boldsymbol{M}\frac{\partial Q}{\partial t} + R(Q) = 0
+
+With the coefficient arrays associated with the diagonally implicit Runge-Kutta method:
+
+.. math::
+
+    \boldsymbol{A} = \left[\begin{array}{ccc}
+                           \gamma & 0 & 0 \\
+                           \tau_{2} - \gamma & \gamma & 0 \\
+                           b_{1} & b_{2} & \gamma \end{array} \right]
+
+.. math::
+
+    \boldsymbol{b} = \left[\begin{array}{ccc}
+                             b_{1} & b_{2} & \gamma \end{array} \right]
+
+where :math:`\gamma` is the root of :math:`x^{3} - 3x^{2} + \frac{3}{2}x - \frac{1}{6} = 0 \in \left(\frac{1}{6},\frac{1}{2}\right)` and
+
+.. math::
+
+    \tau_{2} & = (1 + \gamma)/2\\
+    b_{1} & = -(6\gamma^{2} - 16\gamma + 1)/4\\
+    b_{2} & = (6\gamma^{2} - 20\gamma + 5)/4
+
+The solution is advanced in time as:
+
+.. math::
+
+    \hat{Q}^{n + 1} = \hat{Q}^{n} + b_{1}\Delta \hat{Q}_{1} + b_{2}\Delta \hat{Q}_{2} + b_{3} \Delta \hat{Q}_{3}
+
+Implicit system:
+
+.. math::
+
+    \frac{\Delta \hat{Q}_{i}}{\Delta t}\boldsymbol{M} = -R\left(\hat{Q}^{n} + \sum_{j = 1}^{i}A_{ij}\Delta \hat{Q}_{i}\right)\;\;\;\text{for}\;i = 1,3
+
+Newton linearization:
+
+.. math::
+
+    \left(\boldsymbol{M} + \gamma \Delta t \frac{\partial R(\hat{Q}^{m}_{i})}{\partial Q}\right)\delta \hat{Q}^{m}_{i} = -\boldsymbol{M}\Delta \hat{Q}^{m}_{i} - \Delta t R\left(\hat{Q}^{m}_{i}\right)\;\;\;\text{for}\;i = 1,3
+
+with
+
+.. math::
+
+    \Delta \hat{Q}^{m}_{i} & = \hat{Q}^{n} + \sum_{j = 1}^{i - 1}A_{ij}\Delta \hat{Q}_{i} + \gamma \Delta \hat{Q}^{m}_{i}\\
+    \delta \hat{Q}^{m}_{i} & = \Delta \hat{Q}^{m + 1}_{i} - \Delta \hat{Q}^{m}_{i}
 
 Harmonic Balance
 ----------------
