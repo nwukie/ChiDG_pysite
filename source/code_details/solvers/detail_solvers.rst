@@ -131,6 +131,11 @@ Newton Linearization:
 
 where, :math:`\delta Q^{m} = \Delta Q^{m + 1} -\Delta Q^{m}` for the :math:`m^{th}` Newton iteration.
 
+.. note::
+    
+    - The ChiDG nonlinear solver requires the assembly of the linearized system outlined above
+    - The nonlinear solver computes :math:`\hat{Q}^{m}` instead of :math:`\Delta \hat{Q}^{m}`
+    - For the assembly of the rhs of the linearized system, :math:`\Delta \hat{Q}^{m} = \hat{Q}^{m} - \hat{Q}^{n}` 
 
 Diagonally-Implicit Runge-Kutta
 -------------------------------
@@ -183,8 +188,14 @@ with
 
 .. math::
 
-    \Delta \hat{Q}^{m}_{i} & = \hat{Q}^{n} + \sum_{j = 1}^{i - 1}A_{ij}\Delta \hat{Q}_{i} + \gamma \Delta \hat{Q}^{m}_{i}\\
+    \hat{Q}^{m}_{i} & = \hat{Q}^{n} + \sum_{j = 1}^{i - 1}A_{ij}\Delta \hat{Q}_{i} + \gamma \Delta \hat{Q}^{m}_{i}\\
     \delta \hat{Q}^{m}_{i} & = \Delta \hat{Q}^{m + 1}_{i} - \Delta \hat{Q}^{m}_{i}
+
+.. note::
+
+    - The ChiDG nonlinear solver requires the assembly of the stagewise linearized systems
+    - The nonlinear solver computes :math:`\hat{Q}^{m}_{i}` instead of :math:`\Delta \hat{Q}^{m}_{i}`
+    - For the assembly of the rhs of the linearized system, :math:`\Delta \hat{Q}^{m}_{i} = (\hat{Q}^{m}_{i} - \hat{Q}^{n} - \sum_{j = 1}^{i - 1}A_{ij}\Delta \hat{Q}_{i})/\gamma`
 
 Harmonic Balance
 ----------------
