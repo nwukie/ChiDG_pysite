@@ -264,6 +264,7 @@ Then, Newton linearization of the Harmonic Balance system of equations is:
 
     \left(\frac{\partial \mathscr{D}^{*}}{\partial \hat{\boldsymbol{Q}}^{*}} + \frac{\partial \mathscr{R}^{*}}{\partial \hat{\boldsymbol{Q}}^{*}}\right)\Delta \hat{\boldsymbol{Q}^{*}} = 
     -(\mathscr{D}^{*} + \mathscr{R}^{*})
+
 Explicit integrators
 ====================
 
