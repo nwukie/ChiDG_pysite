@@ -62,7 +62,7 @@ requirements and recommendations regarding compilers:
 
 .. note:: 
 
-    - The GNU Fortran compiler, ``gfortran``, is recommended. **Version >= 5.0 is required**
+    - The GNU Fortran compiler, ``gfortran``, is recommended. **Version >= 6.0 is required**
     - **Do not** use the Intel Fortran compiler, ``ifort``. There are currently several bugs in all versions of the compiler that make it unusable. One bug in the compiler creates a bad memory leak in the compiled code. Intel has been notified and was able to reproduce the issue. 
     - Other Fortran compilers have not been tested and are not supported.
 
